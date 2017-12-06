@@ -18,9 +18,9 @@ const (
 	StdWidth  = 240
 	StdHeight = 80
 	// Maximum absolute skew factor of a single digit.
-	maxSkew = 0.7
+	maxSkew = 0.5
 	// Number of background circles.
-	circleCount = 20
+	circleCount = 50
 )
 
 type Image struct {
@@ -42,20 +42,20 @@ func NewImage(id string, digits []byte, width, height int) *Image {
 	m.Paletted = image.NewPaletted(image.Rect(0, 0, width, height), m.getRandomPalette())
 	m.calculateSizes(width, height, len(digits))
 	// Randomly position captcha inside the image.
-	maxx := width - (m.numWidth+m.dotSize)*len(digits) - m.dotSize
+	maxx := width - (m.numWidth+m.dotSize*3)*len(digits) - m.dotSize
 	maxy := height - m.numHeight - m.dotSize*2
 	var border int
 	if width > height {
-		border = height / 5
+		border = height / 9
 	} else {
-		border = width / 5
+		border = width / 9
 	}
 	x := m.rng.Int(border, maxx-border)
 	y := m.rng.Int(border, maxy-border)
 	// Draw digits.
 	for _, n := range digits {
 		m.drawDigit(font[n], x, y)
-		x += m.numWidth + m.dotSize
+		x += m.numWidth + m.dotSize*3
 	}
 	// Draw strike-through line.
 	m.strikeThrough()
@@ -105,9 +105,9 @@ func (m *Image) calculateSizes(width, height, ncount int) {
 	// Goal: fit all digits inside the image.
 	var border int
 	if width > height {
-		border = height / 4
+		border = height / 6
 	} else {
-		border = width / 4
+		border = width / 6
 	}
 	// Convert everything to floats for calculations.
 	w := float64(width - border*2)
@@ -192,8 +192,8 @@ func (m *Image) strikeThrough() {
 		xo := amplitude * math.Cos(float64(y)*dx)
 		yo := amplitude * math.Sin(float64(x)*dx)
 		for yn := 0; yn < m.dotSize; yn++ {
-			r := m.rng.Int(0, m.dotSize)
-			m.drawCircle(x+int(xo), y+int(yo)+(yn*m.dotSize), r/2, 1)
+			r := m.rng.Int(0, m.dotSize/1)
+			m.drawCircle(x+int(xo), y+int(yo)+(yn*(m.dotSize/1)), r/2, 1)
 		}
 	}
 }
@@ -201,7 +201,7 @@ func (m *Image) strikeThrough() {
 func (m *Image) drawDigit(digit []byte, x, y int) {
 	skf := m.rng.Float(-maxSkew, maxSkew)
 	xs := float64(x)
-	r := m.dotSize / 2
+	r := m.dotSize / 1
 	y += m.rng.Int(-r, r)
 	for yo := 0; yo < fontHeight; yo++ {
 		for xo := 0; xo < fontWidth; xo++ {
